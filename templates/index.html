@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- <link href="fontawesome/css/all.css" rel="stylesheet"> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous">
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <style>
+        input[type=checkbox] {
+            /* Double-sized Checkboxes */
+            -ms-transform: scale(1.2);
+            /* IE */
+            -moz-transform: scale(1.2);
+            /* FF */
+            -webkit-transform: scale(1.2);
+            /* Safari and Chrome */
+            -o-transform: scale(1.2);
+            /* Opera */
+            transform: scale(1);
+            padding: 10px;
+        }
+    </style>
+
+</head>
+
+<body style="background-color: #0f4c82;">
+
+   <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modificar tarea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group p-2">
+                        <input id="inputEdit" type="text" class="form-control"
+                            placeholder="Edite tarea" aria-label="Edite tarea"
+                            aria-describedby="button-addon2">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="closeModal" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button id="modificarConfirmar" type="button" class="btn btn-primary">Editar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid py-md-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class="flashes mb-0" style="list-style-type: none">
+            {% for category, message in messages %}
+            <li class="alert alert-{{ category }}" style="margin-bottom: 0;">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        <div class="row py-md-4 mx-md-5">
+            <div class="col-md-9 px-md-4">
+                <div class="card px-md-5 p-md-4">
+                    <div class="row">
+                        <div class="col-md-10 display-3">
+                            Tareas
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <a href="/logout">Cerrar sesión</a>
+                        </div>
+                    </div>
+                    <div class="my-4" style="overflow-y: scroll; height:62.2vh;">
+                        <table id="tablaTareas" class="table table-hover table-bordered">
+                            <tbody>
+                                <tr id="tablaAdd">
+                                    <td>
+                                        <div class="input-group p-2">
+                                            <input id="newTask" type="text" class="form-control"
+                                                placeholder="Inserte nueva tarea" aria-label="Inserte nueva tarea"
+                                                aria-describedby="button-addon2">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                id="buttonAdd">Añadir</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-center pt-3">
+                                        <input class="form-check-input" type="checkbox" id="checkboxNoLabel" value=""
+                                            aria-label="..." disabled>
+                                    </td>
+                                </tr>
+
+                                {% for task in response.tasks|reverse %}
+                                <tr id="{{task['id']}}">
+                                    <td id="name{{task['id']}}" style="width: 90%;" class="p-3">{{task['name']}}</td>
+                                    {% if task['check'] == false  %}
+                                    <td class="text-center pt-3"><input class="form-check-input" type="checkbox"
+                                            onClick='checkbox(this);' id="checkbox{{task['id']}}" value="1"
+                                            aria-label="..."></td>
+                                    {% else %}
+                                    <td class="text-center pt-3"><input checked class="form-check-input" type="checkbox"
+                                            onclick='checkbox(this);' id="checkbox{{task['id']}}" value="1"
+                                            aria-label="..."></td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 px-md-4">
+                <div class="card p-md-4">
+                    <div class="row p-3">
+                        <div class="col-md-12 my-md-5">
+                            <input disabled type="button" value="Modificar tarea" id="modificar" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                                class="btn btn-primary container-fluid py-5" style="font-size: 1.3rem;">
+                        </div>
+                        <div class="col-md-12 my-md-5">
+                            <input type="button" value="Agregar tarea" id="agregar"
+                                class="btn btn-success container-fluid py-5" style="font-size: 1.3rem;">
+                        </div>
+                        <div class="col-md-12 my-md-5">
+                            <input disabled type="button" value="Eliminar tarea" id="eliminar"
+                                class="btn btn-danger container-fluid py-5" style="font-size: 1.3rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/jquery.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/script.js')}}"></script>
+
+</body>
+
+</html>
